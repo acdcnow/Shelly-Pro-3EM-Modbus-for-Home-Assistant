@@ -1,0 +1,211 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Shelly Pro 3EM",
+        "description": "Enter the connection settings of your Shelly energy meter. Modbus TCP (port 502) has to be enabled in the device web interface.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Unit ID"
+        },
+        "data_description": {
+          "host": "IP address or host name of the Shelly device.",
+          "port": "TCP port of the Modbus server. The Shelly default is 502.",
+          "unit_id": "Modbus unit (slave) ID of the device. The Shelly default is 1."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Shelly Pro 3EM",
+        "description": "Update the connection settings of your Shelly energy meter.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Unit ID"
+        },
+        "data_description": {
+          "host": "IP address or host name of the Shelly device.",
+          "port": "TCP port of the Modbus server. The Shelly default is 502.",
+          "unit_id": "Modbus unit (slave) ID of the device. The Shelly default is 1."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Modbus server. Check the host and the port, and make sure Modbus TCP is enabled on the device.",
+      "unsupported_device": "The device responded, but it is not a Shelly device with an energy meter component."
+    },
+    "abort": {
+      "already_configured": "This device is already configured.",
+      "reconfigure_successful": "The device was reconfigured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Shelly Pro 3EM options",
+        "data": {
+          "scan_interval": "Polling interval",
+          "timeout": "Connection timeout",
+          "create_energy_entities": "Create energy sensors",
+          "create_diagnostic_entities": "Create diagnostic entities"
+        },
+        "data_description": {
+          "scan_interval": "How often the registers of the device are read.",
+          "timeout": "How long to wait for an answer of the device before the request fails.",
+          "create_energy_entities": "Create the energy sensors (per phase and totals) of the device.",
+          "create_diagnostic_entities": "Create the diagnostic sensors, error flags and per phase details of the device."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_update": {
+        "name": "Last update"
+      },
+      "energy_last_update": {
+        "name": "Last energy data update"
+      },
+      "total_current": {
+        "name": "Total current"
+      },
+      "total_active_power": {
+        "name": "Total active power"
+      },
+      "total_apparent_power": {
+        "name": "Total apparent power"
+      },
+      "neutral_current": {
+        "name": "Neutral current"
+      },
+      "total_active_energy": {
+        "name": "Total active energy"
+      },
+      "total_active_returned_energy": {
+        "name": "Total active returned energy"
+      },
+      "phase_voltage": {
+        "name": "Phase {phase} voltage"
+      },
+      "phase_current": {
+        "name": "Phase {phase} current"
+      },
+      "phase_active_power": {
+        "name": "Phase {phase} active power"
+      },
+      "phase_apparent_power": {
+        "name": "Phase {phase} apparent power"
+      },
+      "phase_power_factor": {
+        "name": "Phase {phase} power factor"
+      },
+      "phase_frequency": {
+        "name": "Phase {phase} frequency"
+      },
+      "phase_total_active_energy": {
+        "name": "Phase {phase} total active energy"
+      },
+      "phase_total_active_returned_energy": {
+        "name": "Phase {phase} total active returned energy"
+      },
+      "phase_fundamental_active_energy": {
+        "name": "Phase {phase} fundamental active energy"
+      },
+      "phase_fundamental_active_returned_energy": {
+        "name": "Phase {phase} fundamental active returned energy"
+      },
+      "phase_lagging_reactive_energy": {
+        "name": "Phase {phase} lagging reactive energy"
+      },
+      "phase_leading_reactive_energy": {
+        "name": "Phase {phase} leading reactive energy"
+      },
+      "phase_perpetual_active_energy": {
+        "name": "Phase {phase} perpetual active energy"
+      },
+      "phase_perpetual_active_returned_energy": {
+        "name": "Phase {phase} perpetual active returned energy"
+      },
+      "channel_last_update": {
+        "name": "Channel {channel} last update"
+      },
+      "channel_energy_last_update": {
+        "name": "Channel {channel} last energy data update"
+      },
+      "channel_voltage": {
+        "name": "Channel {channel} voltage"
+      },
+      "channel_current": {
+        "name": "Channel {channel} current"
+      },
+      "channel_active_power": {
+        "name": "Channel {channel} active power"
+      },
+      "channel_apparent_power": {
+        "name": "Channel {channel} apparent power"
+      },
+      "channel_power_factor": {
+        "name": "Channel {channel} power factor"
+      },
+      "channel_frequency": {
+        "name": "Channel {channel} frequency"
+      },
+      "channel_total_active_energy": {
+        "name": "Channel {channel} total active energy"
+      },
+      "channel_total_active_returned_energy": {
+        "name": "Channel {channel} total active returned energy"
+      },
+      "channel_lagging_reactive_energy": {
+        "name": "Channel {channel} lagging reactive energy"
+      },
+      "channel_leading_reactive_energy": {
+        "name": "Channel {channel} leading reactive energy"
+      },
+      "channel_perpetual_active_energy": {
+        "name": "Channel {channel} perpetual active energy"
+      },
+      "channel_perpetual_active_returned_energy": {
+        "name": "Channel {channel} perpetual active returned energy"
+      }
+    },
+    "binary_sensor": {
+      "phase_meter_error": {
+        "name": "Phase {phase} meter error"
+      },
+      "neutral_meter_error": {
+        "name": "Neutral meter error"
+      },
+      "phase_sequence_error": {
+        "name": "Phase sequence error"
+      },
+      "neutral_current_mismatch": {
+        "name": "Neutral current mismatch"
+      },
+      "neutral_overcurrent": {
+        "name": "Neutral overcurrent"
+      },
+      "phase_overpower": {
+        "name": "Phase {phase} overpower"
+      },
+      "phase_overvoltage": {
+        "name": "Phase {phase} overvoltage"
+      },
+      "phase_overcurrent": {
+        "name": "Phase {phase} overcurrent"
+      },
+      "channel_error": {
+        "name": "Channel {channel} meter error"
+      },
+      "channel_overpower": {
+        "name": "Channel {channel} overpower"
+      },
+      "channel_overvoltage": {
+        "name": "Channel {channel} overvoltage"
+      },
+      "channel_overcurrent": {
+        "name": "Channel {channel} overcurrent"
+      }
+    }
+  }
+}

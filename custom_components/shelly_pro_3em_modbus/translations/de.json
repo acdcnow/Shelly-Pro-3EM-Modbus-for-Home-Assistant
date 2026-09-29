@@ -1,0 +1,211 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Shelly Pro 3EM hinzufügen",
+        "description": "Gib die Verbindungsdaten deines Shelly-Energiezählers ein. Modbus TCP (Port 502) muss in der Weboberfläche des Geräts aktiviert sein.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Geräteadresse"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Shelly-Geräts.",
+          "port": "TCP-Port des Modbus-Servers. Standard bei Shelly ist 502.",
+          "unit_id": "Modbus-Adresse (Unit ID) des Geräts. Standard bei Shelly ist 1."
+        }
+      },
+      "reconfigure": {
+        "title": "Shelly Pro 3EM neu konfigurieren",
+        "description": "Aktualisiere die Verbindungsdaten deines Shelly-Energiezählers.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Geräteadresse"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Shelly-Geräts.",
+          "port": "TCP-Port des Modbus-Servers. Standard bei Shelly ist 502.",
+          "unit_id": "Modbus-Adresse (Unit ID) des Geräts. Standard bei Shelly ist 1."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum Modbus-Server fehlgeschlagen. Prüfe Host und Port und stelle sicher, dass Modbus TCP am Gerät aktiviert ist.",
+      "unsupported_device": "Das Gerät hat geantwortet, ist aber kein Shelly-Gerät mit Energiezähler-Komponente."
+    },
+    "abort": {
+      "already_configured": "Dieses Gerät ist bereits konfiguriert.",
+      "reconfigure_successful": "Das Gerät wurde neu konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Shelly Pro 3EM Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall",
+          "timeout": "Verbindungs-Timeout",
+          "create_energy_entities": "Energiesensoren anlegen",
+          "create_diagnostic_entities": "Diagnose-Entitäten anlegen"
+        },
+        "data_description": {
+          "scan_interval": "Wie oft die Register des Geräts gelesen werden.",
+          "timeout": "Wie lange auf eine Antwort des Geräts gewartet wird, bevor die Anfrage fehlschlägt.",
+          "create_energy_entities": "Die Energiesensoren (pro Phase und Summen) des Geräts anlegen.",
+          "create_diagnostic_entities": "Die Diagnosesensoren, Fehlermeldungen und Detailwerte pro Phase anlegen."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_update": {
+        "name": "Letzte Aktualisierung"
+      },
+      "energy_last_update": {
+        "name": "Letzte Aktualisierung der Energiedaten"
+      },
+      "total_current": {
+        "name": "Gesamtstrom"
+      },
+      "total_active_power": {
+        "name": "Wirkleistung gesamt"
+      },
+      "total_apparent_power": {
+        "name": "Scheinleistung gesamt"
+      },
+      "neutral_current": {
+        "name": "Neutralleiterstrom"
+      },
+      "total_active_energy": {
+        "name": "Wirkenergie gesamt"
+      },
+      "total_active_returned_energy": {
+        "name": "Wirkenergie gesamt (Rückspeisung)"
+      },
+      "phase_voltage": {
+        "name": "Spannung Phase {phase}"
+      },
+      "phase_current": {
+        "name": "Strom Phase {phase}"
+      },
+      "phase_active_power": {
+        "name": "Wirkleistung Phase {phase}"
+      },
+      "phase_apparent_power": {
+        "name": "Scheinleistung Phase {phase}"
+      },
+      "phase_power_factor": {
+        "name": "Leistungsfaktor Phase {phase}"
+      },
+      "phase_frequency": {
+        "name": "Frequenz Phase {phase}"
+      },
+      "phase_total_active_energy": {
+        "name": "Wirkenergie Phase {phase}"
+      },
+      "phase_total_active_returned_energy": {
+        "name": "Wirkenergie Phase {phase} (Rückspeisung)"
+      },
+      "phase_fundamental_active_energy": {
+        "name": "Grundschwingungs-Wirkenergie Phase {phase}"
+      },
+      "phase_fundamental_active_returned_energy": {
+        "name": "Grundschwingungs-Wirkenergie Phase {phase} (Rückspeisung)"
+      },
+      "phase_lagging_reactive_energy": {
+        "name": "Induktive Blindenergie Phase {phase}"
+      },
+      "phase_leading_reactive_energy": {
+        "name": "Kapazitive Blindenergie Phase {phase}"
+      },
+      "phase_perpetual_active_energy": {
+        "name": "Wirkenergie Phase {phase} (dauerhaft)"
+      },
+      "phase_perpetual_active_returned_energy": {
+        "name": "Wirkenergie Phase {phase} (Rückspeisung, dauerhaft)"
+      },
+      "channel_last_update": {
+        "name": "Letzte Aktualisierung Kanal {channel}"
+      },
+      "channel_energy_last_update": {
+        "name": "Letzte Aktualisierung der Energiedaten Kanal {channel}"
+      },
+      "channel_voltage": {
+        "name": "Spannung Kanal {channel}"
+      },
+      "channel_current": {
+        "name": "Strom Kanal {channel}"
+      },
+      "channel_active_power": {
+        "name": "Wirkleistung Kanal {channel}"
+      },
+      "channel_apparent_power": {
+        "name": "Scheinleistung Kanal {channel}"
+      },
+      "channel_power_factor": {
+        "name": "Leistungsfaktor Kanal {channel}"
+      },
+      "channel_frequency": {
+        "name": "Frequenz Kanal {channel}"
+      },
+      "channel_total_active_energy": {
+        "name": "Wirkenergie Kanal {channel}"
+      },
+      "channel_total_active_returned_energy": {
+        "name": "Wirkenergie Kanal {channel} (Rückspeisung)"
+      },
+      "channel_lagging_reactive_energy": {
+        "name": "Induktive Blindenergie Kanal {channel}"
+      },
+      "channel_leading_reactive_energy": {
+        "name": "Kapazitive Blindenergie Kanal {channel}"
+      },
+      "channel_perpetual_active_energy": {
+        "name": "Wirkenergie Kanal {channel} (dauerhaft)"
+      },
+      "channel_perpetual_active_returned_energy": {
+        "name": "Wirkenergie Kanal {channel} (Rückspeisung, dauerhaft)"
+      }
+    },
+    "binary_sensor": {
+      "phase_meter_error": {
+        "name": "Zählerfehler Phase {phase}"
+      },
+      "neutral_meter_error": {
+        "name": "Zählerfehler Neutralleiter"
+      },
+      "phase_sequence_error": {
+        "name": "Phasenfolgefehler"
+      },
+      "neutral_current_mismatch": {
+        "name": "Neutralleiterstrom-Abweichung"
+      },
+      "neutral_overcurrent": {
+        "name": "Neutralleiter überstrom"
+      },
+      "phase_overpower": {
+        "name": "Überleistung Phase {phase}"
+      },
+      "phase_overvoltage": {
+        "name": "Überspannung Phase {phase}"
+      },
+      "phase_overcurrent": {
+        "name": "Überstrom Phase {phase}"
+      },
+      "channel_error": {
+        "name": "Zählerfehler Kanal {channel}"
+      },
+      "channel_overpower": {
+        "name": "Überleistung Kanal {channel}"
+      },
+      "channel_overvoltage": {
+        "name": "Überspannung Kanal {channel}"
+      },
+      "channel_overcurrent": {
+        "name": "Überstrom Kanal {channel}"
+      }
+    }
+  }
+}

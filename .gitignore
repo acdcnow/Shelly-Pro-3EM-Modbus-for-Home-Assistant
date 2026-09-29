@@ -1,0 +1,20 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors
+.vscode/
+.idea/
+
+# Local Home Assistant test configuration
+config/
+
+# Logs
+*.log
