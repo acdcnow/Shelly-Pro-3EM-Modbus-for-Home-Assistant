@@ -188,7 +188,7 @@ The repository ships a simulated Shelly Pro 3EM Modbus server
 
 ```bash
 python -m venv .venv
-.venv/Scripts/python -m pip install "pytest-homeassistant-custom-component==0.13.367"
+.venv/Scripts/python -m pip install -r requirements_test.txt
 .venv/Scripts/python -m pytest tests
 ```
 

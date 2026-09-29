@@ -1,0 +1,10 @@
+# Test dependencies.
+#
+# pytest-homeassistant-custom-component pins the matching Home Assistant version
+# (0.13.367 -> homeassistant==2026.9.4) and provides the `hass` fixture and the
+# other fixtures of the official test harness.
+#
+# pymodbus is pinned to the version that Home Assistant 2026.9 requires, it is
+# not part of the Home Assistant base installation.
+pytest-homeassistant-custom-component==0.13.367
+pymodbus==3.13.1
