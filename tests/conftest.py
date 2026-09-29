@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 from typing import Any
 
+import pytest
 import pytest_socket
 
 REPO_ROOT = Path(__file__).parent.parent
@@ -14,13 +15,22 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
+@pytest.fixture(autouse=True)
+def allow_sockets(socket_enabled: None) -> None:
+    """Allow the tests to talk to the simulated Modbus device over TCP.
+
+    The Home Assistant test harness blocks the creation of sockets for every
+    test, while the simulated device listens on 127.0.0.1.
+    """
+
+
 if sys.platform == "win32":
     # pytest_homeassistant_custom_component disables the creation of sockets for
-    # every single test.  asyncio on Windows creates the event loop with a real
-    # socket pair, so the event loop fixture of pytest-asyncio fails before any
-    # fixture could enable sockets again.  Home Assistant does not support
-    # Windows natively, this only keeps the test suite usable on Windows.
-    # Continuous integration runs on Linux, where sockets stay disabled.
+    # every single test.  The autouse fixture above enables them again for each
+    # test, but on Windows asyncio creates its event loop with a real socket pair
+    # before any fixture runs, so the event loop fixture of pytest-asyncio fails
+    # first.  Home Assistant has no native Windows support, this only keeps the
+    # test suite usable on a Windows development machine.
     def _keep_sockets_enabled(*args: Any, **kwargs: Any) -> None:
         """Do not disable the sockets."""
 

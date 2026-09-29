@@ -39,15 +39,6 @@ from custom_components.shelly_pro_3em_modbus.const import (
 from tests.modbus_server import DEFAULT_MAC, FakeShellyDevice, FakeShellyServer
 
 
-@pytest.fixture(autouse=True)
-def allow_sockets(socket_enabled: None) -> None:
-    """Allow the tests to talk to the simulated device over TCP.
-
-    The Home Assistant test harness disables sockets by default, the simulated
-    device listens on 127.0.0.1.
-    """
-
-
 @pytest.fixture(name="device")
 def device_fixture() -> FakeShellyDevice:
     """Return a simulated triphase device."""
