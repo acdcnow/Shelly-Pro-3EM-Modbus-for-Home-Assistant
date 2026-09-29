@@ -90,8 +90,14 @@
       "phase_current": {
         "name": "Phase {phase} current"
       },
+      "phase_active_energy_counter": {
+        "name": "Phase {phase} active energy counter"
+      },
       "phase_active_power": {
         "name": "Phase {phase} active power"
+      },
+      "phase_active_returned_energy_counter": {
+        "name": "Phase {phase} active returned energy counter"
       },
       "phase_apparent_power": {
         "name": "Phase {phase} apparent power"
@@ -120,12 +126,6 @@
       "phase_leading_reactive_energy": {
         "name": "Phase {phase} leading reactive energy"
       },
-      "phase_perpetual_active_energy": {
-        "name": "Phase {phase} perpetual active energy"
-      },
-      "phase_perpetual_active_returned_energy": {
-        "name": "Phase {phase} perpetual active returned energy"
-      },
       "channel_last_update": {
         "name": "Channel {channel} last update"
       },
@@ -138,8 +138,14 @@
       "channel_current": {
         "name": "Channel {channel} current"
       },
+      "channel_active_energy_counter": {
+        "name": "Channel {channel} active energy counter"
+      },
       "channel_active_power": {
         "name": "Channel {channel} active power"
+      },
+      "channel_active_returned_energy_counter": {
+        "name": "Channel {channel} active returned energy counter"
       },
       "channel_apparent_power": {
         "name": "Channel {channel} apparent power"
@@ -161,12 +167,6 @@
       },
       "channel_leading_reactive_energy": {
         "name": "Channel {channel} leading reactive energy"
-      },
-      "channel_perpetual_active_energy": {
-        "name": "Channel {channel} perpetual active energy"
-      },
-      "channel_perpetual_active_returned_energy": {
-        "name": "Channel {channel} perpetual active returned energy"
       }
     },
     "binary_sensor": {

@@ -19,9 +19,10 @@ components and creates a device with all measurements, energies and error flags.
 - **Automatic profile detection** — detects whether the device runs the default
   `triphase` profile (one `EM` component) or the `monophase` profile (three `EM1`
   components) and creates the matching entities
-- **Device information from the device** — MAC address, model and device name are
+- **Device information from the device** — MAC address, model code and device name are
   read from the registers, so the device in Home Assistant is identified by its
-  serial number instead of its IP address
+  serial number instead of its IP address. Devices that do not fill the name registers
+  (the current firmware does not) get the friendly name of their model code
 - **Per phase measurements** — voltage, current, active power, apparent power,
   power factor and frequency for each phase
 - **Energies** — active, returned, reactive and fundamental energy per phase plus
@@ -109,11 +110,15 @@ Changing an option reloads the integration.
 
 | Entity | Unit |
 | --- | --- |
-| Total active energy, phase A/B/C total active energy | Wh |
-| Total active returned energy, phase A/B/C returned energy | Wh |
+| Total active energy, total active returned energy (all phases) | Wh |
+| Phase A/B/C total active energy, total active returned energy | Wh |
+| Phase A/B/C active energy counter, active returned energy counter | Wh |
 | Phase A/B/C fundamental active / returned energy | Wh |
 | Phase A/B/C lagging / leading reactive energy | varh |
-| Phase A/B/C perpetual active / returned energy | Wh |
+
+The per phase energies are the *perpetual* counters of the device, the values that
+the Shelly app shows. The resettable counters and the fundamental energies are
+disabled by default, the values are only needed for special use cases.
 
 Diagnostic entities: *Last update*, *Last energy data update* and the error flags
 *phase A/B/C meter error*, *neutral meter error*, *phase sequence error*,
@@ -123,11 +128,8 @@ Diagnostic entities: *Last update*, *Last energy data update* and the error flag
 ### Monophase profile
 
 The same values are created per channel (`Channel 1` to `Channel 3`) from the three
-`EM1` and `EM1Data` components.
-
-The *fundamental* and *perpetual* energy sensors are disabled by default because
-they are only needed for special use cases. They can be enabled in the entity
-settings.
+`EM1` and `EM1Data` components. The per channel energies are the perpetual counters
+of the device as well, the resettable counters are disabled by default.
 
 Energies are provided in the unit that the device reports (`Wh` and `varh`).
 Home Assistant converts them to your preferred unit for the display and for the
@@ -163,6 +165,42 @@ Sources:
 - [Shelly API documentation — EM1 component](https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/EM1)
 - [Shelly API documentation — EM1Data component](https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/EM1Data)
 - [Shelly API documentation — Modbus](https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Modbus)
+
+### Byte order
+
+The byte order was verified against a real Shelly Pro 3EM (firmware 2.1.0-beta1):
+
+- 32 bit values are stored in the **CDAB** order, the low word comes first and every
+  word is big endian. `0x4369 0xA260` is 233.63 V. Shelly itself uses this mode in its
+  tool examples: `modbus -B mixed <ip> i@1020/f`.
+- ASCII strings hold two characters per register with the **low byte first**, `0x4345`
+  is `"EC"`, and are terminated with a zero byte. The MAC address of a real device
+  decodes to `EC6260975A68` and its model code to `SPEM-003CEBEU`.
+
+This matters when you build your own template sensors or YAML modbus entries for
+these registers: in the Home Assistant modbus integration the 32 bit values need
+`swap: word`.
+
+## Verified against real hardware
+
+The integration was checked against a physical Shelly Pro 3EM (firmware
+2.1.0-beta1, model code `SPEM-003CEBEU`) while it was measuring a real three phase
+installation. The register values were compared with the values of the device's own
+API:
+
+| Value | Modbus registers | Device API (`em:0` / `emdata:0`) |
+| --- | --- | --- |
+| Phase A voltage | 233.47 V | 233.2 V |
+| Phase B current | 0.783 A | 0.782 A |
+| Phase C active power | 140.20 W | 140.2 W |
+| Phase A power factor | 0.621 | 0.62 |
+| Frequency | 49.99 Hz | 50.0 Hz |
+| Phase A total active energy | 882.99 Wh | 882.99 Wh |
+| Total active energy (all phases) | 7852.95 Wh | 7852.95 Wh |
+| Phase A returned energy | 6527.89 Wh | 6527.89 Wh |
+
+The remaining difference of the momentary values comes from the two readings being
+taken a moment apart while the load changes.
 
 ## Troubleshooting
 

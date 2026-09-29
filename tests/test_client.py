@@ -79,9 +79,9 @@ async def test_probe_monophase_device() -> None:
 
 
 @async_test
-async def test_probe_rejects_other_devices() -> None:
-    """A reachable device without an energy meter is rejected."""
-    device = FakeShellyDevice(model="NotAShelly", profile="monophase")
+async def test_probe_rejects_devices_without_shelly_registers() -> None:
+    """A reachable Modbus server without the Shelly registers is rejected."""
+    device = FakeShellyDevice(mac="")
     server, client = await _setup(device)
     try:
         with pytest.raises(UnsupportedDeviceError):
@@ -97,7 +97,7 @@ async def test_probe_rejects_device_without_energy_meter() -> None:
     device = FakeShellyDevice(profile="none")
     server, client = await _setup(device)
     try:
-        with pytest.raises(ShellyModbusError):
+        with pytest.raises(UnsupportedDeviceError):
             await async_probe_device(client)
     finally:
         await client.async_close()
@@ -150,11 +150,12 @@ async def test_read_em_data_block() -> None:
     assert values["emdata_timestamp"] > 0
     assert values["total_act_energy"] == pytest.approx(1234567.0)
     assert values["total_act_ret_energy"] == pytest.approx(12345.0)
-    assert values["a_total_act_energy"] == pytest.approx(100000.0)
-    assert values["b_total_act_energy"] == pytest.approx(100001.0)
-    assert values["c_total_act_energy"] == pytest.approx(100002.0)
-    assert values["c_fund_act_ret_energy"] == pytest.approx(5001.0)
+    assert values["a_total_act_energy"] == pytest.approx(10.0)
+    assert values["b_total_act_energy"] == pytest.approx(11.0)
+    assert values["c_total_act_energy"] == pytest.approx(12.0)
+    assert values["c_fund_act_ret_energy"] == pytest.approx(1.1)
     assert values["a_lag_react_energy"] == pytest.approx(1200.0)
+    assert values["a_total_act_energy_perpetual"] == pytest.approx(100000.0)
     assert values["c_total_act_energy_perpetual"] == pytest.approx(100002.0)
 
 
@@ -176,8 +177,9 @@ async def test_read_em1_blocks() -> None:
     assert momentary["em1_2_current"] == pytest.approx(3.0, abs=1e-3)
     assert momentary["em1_2_aprt_power"] == pytest.approx(247.0, abs=1e-2)
     assert momentary["em1_0_error"] is False
-    assert energy["em1data_0_total_act_energy"] == pytest.approx(1000.0)
-    assert energy["em1data_2_total_act_ret_energy"] == pytest.approx(102.0)
+    assert energy["em1data_0_total_act_energy"] == pytest.approx(10.0)
+    assert energy["em1data_2_total_act_ret_energy"] == pytest.approx(3.0)
+    assert energy["em1data_0_total_act_energy_perpetual"] == pytest.approx(1000.0)
     assert energy["em1data_1_lead_react_energy"] == pytest.approx(61.0)
 
 

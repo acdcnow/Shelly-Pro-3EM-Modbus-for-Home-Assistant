@@ -6,10 +6,17 @@ documentation (https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/E
 Shelly documents the registers with the ``3xxxx`` reference convention, where
 ``31020`` is phase A voltage and ``31160`` is the timestamp of the energy data.
 Modbus requests use the plain protocol address, which is the documented number
-minus ``30000``, so ``31020`` is read from input register ``1020``.  This is
-confirmed by Shelly's own tooling examples, e.g. ``modbus <ip> i@1020/f`` reads
-phase A voltage.  Every register listed by Shelly for the Pro 3EM is an input
-register (Modbus function code 4) and 32 bit values are big endian floats.
+minus ``30000``, so ``31020`` is read from input register ``1020``.
+
+Every register listed by Shelly for the Pro 3EM is an input register (Modbus
+function code 4).  The byte order was verified against a real Shelly Pro 3EM
+(firmware 2.1.0-beta1):
+
+* 32 bit values are stored in the CDAB order, the low word comes first and every
+  word is big endian (``0x4369`` ``0xA260`` is 233.63 V).  This is the "byte order
+  mixed" mode that Shelly uses in its own tool examples.
+* ASCII strings hold two characters per register with the low byte first
+  (``0x4345`` is ``"EC"``) and are terminated with a zero byte.
 """
 
 from __future__ import annotations
@@ -24,6 +31,12 @@ DOMAIN: Final = "shelly_pro_3em_modbus"
 MANUFACTURER: Final = "Shelly"
 MODEL_PRO_3EM: Final = "Shelly Pro 3EM"
 DEFAULT_DEVICE_NAME: Final = "Shelly Pro 3EM"
+
+#: Friendly names for the model codes that the devices report in their registers.
+MODEL_DISPLAY_NAMES: Final[dict[str, str]] = {
+    # Shelly Pro 3EM, verified on a real device (app "Pro3EM").
+    "SPEM-003CEBEU": MODEL_PRO_3EM,
+}
 
 # --------------------------------------------------------------------------
 # Configuration
@@ -63,17 +76,21 @@ Decoder = Callable[[Sequence[int], int], Any]
 
 
 def decode_float32(registers: Sequence[int], offset: int) -> float:
-    """Decode two registers into a big endian 32 bit float."""
+    """Decode a 32 bit float from two registers.
+
+    Shelly stores 32 bit values in the CDAB order: the low word comes first and
+    every word is big endian.
+    """
     return float(
         struct.unpack(
-            ">f", struct.pack(">HH", registers[offset], registers[offset + 1])
+            ">f", struct.pack(">HH", registers[offset + 1], registers[offset])
         )[0]
     )
 
 
 def decode_uint32(registers: Sequence[int], offset: int) -> int:
-    """Decode two registers into a big endian 32 bit unsigned integer."""
-    return (registers[offset] << 16) | registers[offset + 1]
+    """Decode a 32 bit unsigned integer from two registers (CDAB order)."""
+    return (registers[offset + 1] << 16) | registers[offset]
 
 
 def decode_bool(registers: Sequence[int], offset: int) -> bool:
@@ -82,14 +99,18 @@ def decode_bool(registers: Sequence[int], offset: int) -> bool:
 
 
 def _ascii_decoder(register_count: int) -> Decoder:
-    """Return a decoder for a zero padded ASCII string."""
+    """Return a decoder for a zero terminated ASCII string.
+
+    Every register holds two characters with the low byte first, so ``0x4345``
+    is ``"EC"``.  Everything from the first zero byte on is padding.
+    """
 
     def _decode(registers: Sequence[int], offset: int) -> str:
         raw = b"".join(
-            struct.pack(">H", registers[offset + index])
+            struct.pack("<H", registers[offset + index])
             for index in range(register_count)
         )
-        return raw.decode("ascii", errors="ignore").replace("\x00", "").strip()
+        return raw.split(b"\x00", 1)[0].decode("ascii", errors="ignore").strip()
 
     return _decode
 

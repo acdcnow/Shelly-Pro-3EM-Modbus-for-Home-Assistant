@@ -36,7 +36,12 @@ from custom_components.shelly_pro_3em_modbus.const import (
     PROFILE_MONOPHASE,
     PROFILE_TRIPHASE,
 )
-from tests.modbus_server import DEFAULT_MAC, FakeShellyDevice, FakeShellyServer
+from tests.modbus_server import (
+    DEFAULT_MAC,
+    DEFAULT_MODEL,
+    FakeShellyDevice,
+    FakeShellyServer,
+)
 
 
 @pytest.fixture(name="device")
@@ -153,7 +158,7 @@ async def test_setup_entry_creates_triphase_entities(
     assert diagnostic.entity_category.value == "diagnostic"
 
     disabled = entity_registry.async_get_entity_id(
-        "sensor", DOMAIN, f"{DEFAULT_MAC}_a_total_act_energy_perpetual"
+        "sensor", DOMAIN, f"{DEFAULT_MAC}_a_total_act_energy"
     )
     assert disabled is not None
     disabled_entry = entity_registry.async_get(disabled)
@@ -162,10 +167,48 @@ async def test_setup_entry_creates_triphase_entities(
 
     device = dr.async_get(hass).async_get(entry.device_id)
     assert device is not None
-    assert device.model == "ShellyPro3EM"
+    assert device.model == DEFAULT_MODEL
     assert device.serial_number == DEFAULT_MAC
     assert device.manufacturer == "Shelly"
     assert device.configuration_url == "http://127.0.0.1"
+
+
+async def test_device_name_falls_back_to_the_model(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+) -> None:
+    """Devices without a name in the registers get the name of their model code.
+
+    A real Shelly Pro 3EM does not fill the device name registers.
+    """
+    device = FakeShellyDevice(name="")
+    server = FakeShellyServer(device)
+    await server.start()
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Shelly Pro 3EM",
+        unique_id=device.mac,
+        data={CONF_HOST: "127.0.0.1", CONF_PORT: server.port, CONF_UNIT_ID: 1},
+    )
+    entry.add_to_hass(hass)
+
+    try:
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+        entity_registry = er.async_get(hass)
+        registered = entity_registry.async_get_entity_id(
+            "sensor", DOMAIN, f"{DEFAULT_MAC}_a_voltage"
+        )
+        assert registered is not None
+        registered_entry = entity_registry.async_get(registered)
+        assert registered_entry is not None
+        registered_device = dr.async_get(hass).async_get(registered_entry.device_id)
+        assert registered_device is not None
+        assert registered_device.name == "Shelly Pro 3EM"
+        assert registered_device.model == DEFAULT_MODEL
+    finally:
+        await server.stop()
 
 
 async def test_setup_entry_monophase_device(
@@ -243,8 +286,8 @@ async def test_config_flow_cannot_connect(
 async def test_config_flow_unsupported_device(
     hass: HomeAssistant, enable_custom_integrations: None
 ) -> None:
-    """The config flow rejects devices that are not Shelly devices."""
-    server = FakeShellyServer(FakeShellyDevice(model="SomethingElse"))
+    """The config flow rejects Modbus servers that are not a Shelly device."""
+    server = FakeShellyServer(FakeShellyDevice(mac=""))
     await server.start()
     try:
         result = await hass.config_entries.flow.async_init(
@@ -420,7 +463,7 @@ async def test_diagnostics(
     )
 
     assert diagnostics["device"]["mac"] == DEFAULT_MAC
-    assert diagnostics["device"]["model"] == "ShellyPro3EM"
+    assert diagnostics["device"]["model"] == DEFAULT_MODEL
     assert diagnostics["device"]["profile"] == PROFILE_TRIPHASE
     assert diagnostics["device"]["connected"] is True
     assert diagnostics["unavailable_blocks"] == []

@@ -17,7 +17,7 @@ from .client import (
     ShellyModbusError,
     async_probe_device,
 )
-from .const import DOMAIN, MANUFACTURER, PROFILE_BLOCKS
+from .const import DOMAIN, MANUFACTURER, MODEL_DISPLAY_NAMES, MODEL_PRO_3EM, PROFILE_BLOCKS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,11 +52,24 @@ class ShellyPro3EMCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._failed_updates = 0
 
     @property
+    def device_name(self) -> str:
+        """Return the name of the device for the device registry.
+
+        The device name registers are not filled on every firmware, an empty name
+        falls back to the friendly name of the model code.
+        """
+        return (
+            self.device.name
+            or MODEL_DISPLAY_NAMES.get(self.device.model, "")
+            or MODEL_PRO_3EM
+        )
+
+    @property
     def device_info(self) -> DeviceInfo:
         """Return the device information of the meter."""
         return DeviceInfo(
             identifiers={(DOMAIN, self.device.mac)},
-            name=self.device.name or self.device.model,
+            name=self.device_name,
             manufacturer=MANUFACTURER,
             model=self.device.model,
             serial_number=self.device.mac,

@@ -126,45 +126,46 @@ MOMENTARY_FIELDS: Final[tuple[tuple[str, str, dict[str, Any]], ...]] = (
 )
 
 #: Energy values of a phase of the EMData component.
+#:
+#: The Shelly app reports the perpetual counters, the values that the device keeps
+#: over a reset of the counters, so these are the primary energy sensors.
+#: Verified against a real Shelly Pro 3EM: register 31182 matched
+#: ``emdata:0/a_total_act_energy``.
 EM_DATA_ENERGY_FIELDS: Final[tuple[tuple[str, str, dict[str, Any]], ...]] = (
-    ("total_act_energy", "total_active_energy", _ENERGY),
-    ("total_act_ret_energy", "total_active_returned_energy", _ENERGY),
+    ("total_act_energy_perpetual", "total_active_energy", _ENERGY),
+    ("total_act_ret_energy_perpetual", "total_active_returned_energy", _ENERGY),
 )
 
 #: Diagnostic energy values of a phase of the EMData component.
+#:
+#: The resettable counters of the device.  They are disabled by default because
+#: they usually hold no or only a small value, the perpetual counters above are
+#: the ones the Shelly app shows.
 EM_DATA_DIAGNOSTIC_ENERGY_FIELDS: Final[
     tuple[tuple[str, str, dict[str, Any]], ...]
 ] = (
+    ("total_act_energy", "active_energy_counter", _ENERGY_DISABLED),
+    ("total_act_ret_energy", "active_returned_energy_counter", _ENERGY_DISABLED),
     ("fund_act_energy", "fundamental_active_energy", _ENERGY_DISABLED),
     ("fund_act_ret_energy", "fundamental_active_returned_energy", _ENERGY_DISABLED),
     ("lag_react_energy", "lagging_reactive_energy", _REACTIVE_ENERGY),
     ("lead_react_energy", "leading_reactive_energy", _REACTIVE_ENERGY),
-    ("total_act_energy_perpetual", "perpetual_active_energy", _ENERGY_DISABLED),
-    (
-        "total_act_ret_energy_perpetual",
-        "perpetual_active_returned_energy",
-        _ENERGY_DISABLED,
-    ),
 )
 
-#: Energy values of an EM1Data component of a monophase device.
+#: Energy values of an EM1Data component of a monophase device, see above.
 EM1_DATA_ENERGY_FIELDS: Final[tuple[tuple[str, str, dict[str, Any]], ...]] = (
-    ("total_act_energy", "total_active_energy", _ENERGY),
-    ("total_act_ret_energy", "total_active_returned_energy", _ENERGY),
+    ("total_act_energy_perpetual", "total_active_energy", _ENERGY),
+    ("total_act_ret_energy_perpetual", "total_active_returned_energy", _ENERGY),
 )
 
 #: Diagnostic energy values of an EM1Data component of a monophase device.
 EM1_DATA_DIAGNOSTIC_ENERGY_FIELDS: Final[
     tuple[tuple[str, str, dict[str, Any]], ...]
 ] = (
+    ("total_act_energy", "active_energy_counter", _ENERGY_DISABLED),
+    ("total_act_ret_energy", "active_returned_energy_counter", _ENERGY_DISABLED),
     ("lag_react_energy", "lagging_reactive_energy", _REACTIVE_ENERGY),
     ("lead_react_energy", "leading_reactive_energy", _REACTIVE_ENERGY),
-    ("total_act_energy_perpetual", "perpetual_active_energy", _ENERGY_DISABLED),
-    (
-        "total_act_ret_energy_perpetual",
-        "perpetual_active_returned_energy",
-        _ENERGY_DISABLED,
-    ),
 )
 
 

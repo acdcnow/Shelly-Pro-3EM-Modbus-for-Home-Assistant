@@ -13,6 +13,9 @@ import pytest
 
 from custom_components.shelly_pro_3em_modbus.const import (
     DEVICE_INFO_BLOCK,
+    DEVICE_MAC,
+    DEVICE_MODEL,
+    DEVICE_NAME,
     EM_BLOCK,
     EM_DATA_BLOCK,
     EM1_BLOCK,
@@ -23,6 +26,15 @@ from custom_components.shelly_pro_3em_modbus.const import (
     decode_float32,
     decode_uint32,
 )
+
+# Registers captured from a real Shelly Pro 3EM, firmware 2.1.0-beta1.
+REAL_MAC_REGISTERS: Final = (0x4345, 0x3236, 0x3036, 0x3739, 0x4135, 0x3836)
+REAL_MODEL_REGISTERS: Final = (0x5053, 0x4D45, 0x302D, 0x3330, 0x4543, 0x4542, 0x0055)
+REAL_MAC: Final = "EC6260975A68"
+REAL_MODEL: Final = "SPEM-003CEBEU"
+REAL_PHASE_A_VOLTAGE_REGISTERS: Final = (0xA260, 0x4369)  # 233.63 V
+REAL_PHASE_A_FREQUENCY_REGISTERS: Final = (0xF600, 0x4247)  # 49.99 Hz
+REAL_TIMESTAMP_REGISTERS: Final = (0x36DD, 0x6ABC)  # 2026-09-29 22:08:29 UTC
 
 # Highest amount of registers a Modbus request may read.
 MAX_REGISTER_COUNT: Final = 125
@@ -210,16 +222,25 @@ def test_registers_do_not_overlap(block: RegisterBlock) -> None:
 
 
 def test_decode_float32() -> None:
-    """Floats are decoded as big endian IEEE 754 values."""
-    assert decode_float32([0x4366, 0x6666], 0) == pytest.approx(230.4, abs=1e-3)
+    """Floats are stored with the low word first (CDAB)."""
+    assert decode_float32([0x6666, 0x4366], 0) == pytest.approx(230.4, abs=1e-3)
     assert decode_float32([0x0000, 0x0000], 0) == 0.0
-    assert decode_float32([0x0000, 0xC1F0, 0x0000], 1) == pytest.approx(-30.0)
+    assert decode_float32([0xFFFF, 0x0000, 0xC1F0], 1) == pytest.approx(-30.0)
+    # Registers of a real device.
+    assert decode_float32(list(REAL_PHASE_A_VOLTAGE_REGISTERS), 0) == pytest.approx(
+        233.63, abs=1e-2
+    )
+    assert decode_float32(list(REAL_PHASE_A_FREQUENCY_REGISTERS), 0) == pytest.approx(
+        49.99, abs=1e-2
+    )
 
 
 def test_decode_uint32() -> None:
-    """32 bit integers are decoded with the high word first."""
-    assert decode_uint32([0x0001, 0x0002], 0) == 0x00010002
-    assert decode_uint32([0x1234, 0x5678], 0) == 0x12345678
+    """32 bit integers are stored with the low word first."""
+    assert decode_uint32([0x0002, 0x0001], 0) == 0x00010002
+    assert decode_uint32([0x5678, 0x1234], 0) == 0x12345678
+    # Registers of a real device: the timestamp of the last EM update.
+    assert decode_uint32(list(REAL_TIMESTAMP_REGISTERS), 0) == 1790719709
 
 
 def test_decode_bool() -> None:
@@ -229,20 +250,21 @@ def test_decode_bool() -> None:
 
 
 def test_device_information_decoding() -> None:
-    """The ASCII device information decodes to readable strings."""
-    from custom_components.shelly_pro_3em_modbus.const import (
-        DEVICE_MAC,
-        DEVICE_MODEL,
-        DEVICE_NAME,
-    )
+    """The ASCII device information decodes to readable strings.
 
+    The registers are the ones that a real Shelly Pro 3EM returned, the low byte
+    of every register holds the first character.
+    """
     registers = [0] * DEVICE_INFO_BLOCK.size
-    for index, value in enumerate((0x4543, 0x3632, 0x3630, 0x3841, 0x3333, 0x4130)):
+    for index, value in enumerate(REAL_MAC_REGISTERS):
         registers[index] = value
+    for index, value in enumerate(REAL_MODEL_REGISTERS):
+        registers[6 + index] = value
+
     values = {
         register.key: register.decoder(registers, register.address)
         for register in DEVICE_INFO_BLOCK.registers
     }
-    assert values[DEVICE_MAC] == "EC62608A33A0"
-    assert values[DEVICE_MODEL] == ""
+    assert values[DEVICE_MAC] == REAL_MAC
+    assert values[DEVICE_MODEL] == REAL_MODEL
     assert values[DEVICE_NAME] == ""

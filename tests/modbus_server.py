@@ -27,24 +27,29 @@ TRIPHASE_RANGES: Final = ((0, 48), (1000, 76), (1160, 67))
 MONOPHASE_RANGES: Final = ((0, 48), (2000, 60), (2300, 54))
 
 DEFAULT_MAC: Final = "EC62608A33A0"
-DEFAULT_MODEL: Final = "ShellyPro3EM"
+DEFAULT_MODEL: Final = "SPEM-003CEBEU"
 DEFAULT_NAME: Final = "shellypro3em-f008d1d8b8b8"
 
 
 def float_registers(value: float) -> list[int]:
-    """Encode a float as two big endian registers."""
-    return list(struct.unpack(">HH", struct.pack(">f", value)))
+    """Encode a float the way the device stores it.
+
+    The low word comes first and every word is big endian (CDAB), like on a real
+    Shelly Pro 3EM.
+    """
+    high, low = struct.unpack(">HH", struct.pack(">f", value))
+    return [low, high]
 
 
 def uint32_registers(value: int) -> list[int]:
-    """Encode a 32 bit integer as two big endian registers."""
-    return [(value >> 16) & 0xFFFF, value & 0xFFFF]
+    """Encode a 32 bit integer with the low word first, like the device."""
+    return [value & 0xFFFF, (value >> 16) & 0xFFFF]
 
 
 def ascii_registers(text: str, size: int) -> list[int]:
-    """Encode a zero padded ASCII string into registers."""
-    raw = text.encode("ascii")[: size * 2].ljust(size * 2, b"\x00")
-    return list(struct.unpack(f">{size}H", raw))
+    """Encode a zero terminated ASCII string, low byte of a register first."""
+    raw = (text.encode("ascii") + b"\x00")[: size * 2].ljust(size * 2, b"\x00")
+    return list(struct.unpack(f"<{size}H", raw))
 
 
 @dataclass
@@ -152,9 +157,11 @@ class FakeShellyDevice:
         self.put_float(1164, 12345.0)  # total active returned energy, all phases
 
         phases = (
-            (100000.0, 99999.0, 5000.0, 4999.0, 1200.0, 1300.0, 100000.0, 5000.0),
-            (100001.0, 100000.0, 5001.0, 5000.0, 1201.0, 1301.0, 100001.0, 5001.0),
-            (100002.0, 100001.0, 5002.0, 5001.0, 1202.0, 1302.0, 100002.0, 5002.0),
+            # total, fundamental, returned, fundamental returned, lagging, leading,
+            # perpetual total, perpetual returned
+            (10.0, 9.0, 1.0, 0.9, 1200.0, 1300.0, 100000.0, 5000.0),
+            (11.0, 10.0, 1.1, 1.0, 1201.0, 1301.0, 100001.0, 5001.0),
+            (12.0, 11.0, 1.2, 1.1, 1202.0, 1302.0, 100002.0, 5002.0),
         )
         for index, values in enumerate(phases):
             base = 1170 + index * 20
@@ -182,12 +189,12 @@ class FakeShellyDevice:
         for index in range(3):
             base = 2300 + index * 20
             self.put_uint32(base, int(time.time()))
-            self.put_float(base + 2, 1000.0 + index)
-            self.put_float(base + 4, 100.0 + index)
+            self.put_float(base + 2, 10.0 + index)  # resettable counter
+            self.put_float(base + 4, 1.0 + index)  # resettable counter
             self.put_float(base + 6, 50.0 + index)
             self.put_float(base + 8, 60.0 + index)
-            self.put_float(base + 10, 1000.0 + index)
-            self.put_float(base + 12, 100.0 + index)
+            self.put_float(base + 10, 1000.0 + index)  # perpetual counter
+            self.put_float(base + 12, 100.0 + index)  # perpetual counter
 
     def read_registers(self, address: int, count: int) -> list[int] | None:
         """Return the register values or None for an illegal address."""

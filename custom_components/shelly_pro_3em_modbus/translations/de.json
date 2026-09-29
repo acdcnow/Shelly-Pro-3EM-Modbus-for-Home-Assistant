@@ -90,8 +90,14 @@
       "phase_current": {
         "name": "Strom Phase {phase}"
       },
+      "phase_active_energy_counter": {
+        "name": "Wirkenergie-Zähler Phase {phase}"
+      },
       "phase_active_power": {
         "name": "Wirkleistung Phase {phase}"
+      },
+      "phase_active_returned_energy_counter": {
+        "name": "Wirkenergie-Zähler Phase {phase} (Rückspeisung)"
       },
       "phase_apparent_power": {
         "name": "Scheinleistung Phase {phase}"
@@ -120,12 +126,6 @@
       "phase_leading_reactive_energy": {
         "name": "Kapazitive Blindenergie Phase {phase}"
       },
-      "phase_perpetual_active_energy": {
-        "name": "Wirkenergie Phase {phase} (dauerhaft)"
-      },
-      "phase_perpetual_active_returned_energy": {
-        "name": "Wirkenergie Phase {phase} (Rückspeisung, dauerhaft)"
-      },
       "channel_last_update": {
         "name": "Letzte Aktualisierung Kanal {channel}"
       },
@@ -138,8 +138,14 @@
       "channel_current": {
         "name": "Strom Kanal {channel}"
       },
+      "channel_active_energy_counter": {
+        "name": "Wirkenergie-Zähler Kanal {channel}"
+      },
       "channel_active_power": {
         "name": "Wirkleistung Kanal {channel}"
+      },
+      "channel_active_returned_energy_counter": {
+        "name": "Wirkenergie-Zähler Kanal {channel} (Rückspeisung)"
       },
       "channel_apparent_power": {
         "name": "Scheinleistung Kanal {channel}"
@@ -161,12 +167,6 @@
       },
       "channel_leading_reactive_energy": {
         "name": "Kapazitive Blindenergie Kanal {channel}"
-      },
-      "channel_perpetual_active_energy": {
-        "name": "Wirkenergie Kanal {channel} (dauerhaft)"
-      },
-      "channel_perpetual_active_returned_energy": {
-        "name": "Wirkenergie Kanal {channel} (Rückspeisung, dauerhaft)"
       }
     },
     "binary_sensor": {

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+import re
 from typing import Any, Final
 
 from pymodbus.client import AsyncModbusTcpClient
@@ -33,6 +34,10 @@ EM1_PROBE_COUNT: Final = 19
 #: Modbus exception codes meaning that the requested component does not exist.
 EXCEPTION_ILLEGAL_FUNCTION: Final = 0x01
 EXCEPTION_ILLEGAL_DATA_ADDRESS: Final = 0x02
+
+#: A MAC address of a Shelly device, 12 hexadecimal characters.
+MAC_PATTERN: Final = re.compile(r"^[0-9A-F]{12}$")
+EMPTY_MAC: Final = "0" * 12
 
 
 class ShellyModbusError(Exception):
@@ -159,19 +164,23 @@ class ShellyModbusClient:
 
 
 async def async_probe_device(client: ShellyModbusClient) -> ShellyDeviceInfo:
-    """Read the device information and detect the configured device profile."""
+    """Read the device information and detect the configured device profile.
+
+    The model register holds the model code of the device (``SPEM-003CEBEU`` for a
+    Shelly Pro 3EM), not a friendly name, so the device is identified by its MAC
+    address and by the energy meter component that answers, not by the model text.
+    """
     values = await client.async_read_block(DEVICE_INFO_BLOCK)
 
     model = str(values.get(DEVICE_MODEL, ""))
     mac = str(values.get(DEVICE_MAC, "")).upper()
     name = str(values.get(DEVICE_NAME, ""))
 
-    if not model or not mac:
-        raise ShellyModbusError(
-            "the device did not return the Shelly device information registers"
+    if mac == EMPTY_MAC or not MAC_PATTERN.match(mac):
+        raise UnsupportedDeviceError(
+            "the Modbus server did not return the device information registers"
+            " of a Shelly device"
         )
-    if not model.startswith("Shelly"):
-        raise UnsupportedDeviceError(f"unsupported device model '{model}'")
 
     return ShellyDeviceInfo(
         mac=mac,
@@ -198,7 +207,9 @@ async def _async_detect_profile(client: ShellyModbusClient) -> str:
         return PROFILE_TRIPHASE
     if em1 is not None:
         return PROFILE_MONOPHASE
-    raise ShellyModbusError("no energy meter component was found on the device")
+    raise UnsupportedDeviceError(
+        "no energy meter component was found on the device"
+    )
 
 
 async def _async_read_probe(
